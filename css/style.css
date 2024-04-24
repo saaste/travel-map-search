@@ -1,0 +1,291 @@
+:root {
+    --background-color: #38373d;
+}
+
+html, body {
+    height: 100vh;
+    max-height: -webkit-fill-available;
+    width: 100vw;
+}
+
+body {
+    display: grid;
+    grid-template-rows: min-content 1fr min-content;
+    grid-template-columns: minmax(0, min-content) minmax(0, min-content) 1fr;
+    grid-template-areas:
+      "header header header"
+      "sidebar toggler map"
+      "buttons toggler map";
+
+    background-color: var(--background-color);
+    color: #dfdfdf;
+
+    font-family: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
+    font-weight: normal;
+}
+
+.header {
+    grid-area: header;
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.map {
+    grid-area: map;
+}
+
+.sidebar {
+    grid-area: sidebar;
+    padding: 1rem;
+    white-space: nowrap;
+    overflow-y: auto;
+}
+
+.buttons {
+    grid-area: buttons;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.toggler {
+    padding: 0.5rem;
+}
+
+
+.button-group {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    justify-content: center;
+}
+
+fieldset {
+    border: 2px solid #5a5a5a;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group:has([type=checkbox]) {
+    display:flex;
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    
+}
+
+input[type=checkbox] {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+label.selected {
+    text-shadow: 0px 0px 5px #71ff76b2;
+}
+
+button {
+    padding: 0.5rem;
+    border-radius: 10px;
+    background-color: #473a52;
+    border: 1px solid hsl(273, 17%, 47%);
+    color: #dfdfdf;
+    font-weight: bold;
+}
+
+button:hover, button:focus {
+    background-color: hsl(273, 17%, 37%);
+}
+button:disabled {
+    opacity: 50%;
+}
+
+.leaflet-marker-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .fa-solid {
+        font-size: 20px;
+    }
+}
+
+.marker-popup-content {
+    p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    animation: rotating 2s linear infinite;
+}
+
+@media only screen and (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    fieldset {
+        gap: 0.5rem;
+    }
+
+    .buttons {
+        padding-bottom: 4rem;
+    }
+
+}
+
+/* Accommodation */ 
+.icon-tourism-hotel {
+    color: #b10000;
+}
+.icon-tourism-hostel {
+    color: #b10000;
+}
+.icon-tourism-apartment {
+    color: #b10000;
+}
+.icon-tourism-guest_house {
+    color: #b10000;
+}
+.icon-tourism-chalet {
+    color: #b10000;
+}
+.icon-tourism-alpine_hut {
+    color: #b10000;
+}
+.icon-tourism-wine-cellar {
+    color: #b10000;
+}
+
+/* Bars and restaurants */
+.icon-amenity-restaurant {
+    color: #8f5600;
+}
+.icon-amenity-cafe {
+    color: #8f5600;
+}
+.icon-amenity-bar {
+    color: #8f5600;
+}
+.icon-amenity-pub {
+    color: #8f5600;
+}
+
+/* Shops */
+.icon-shop-supermarket {
+    color: #458f00;
+}
+.icon-shop-department_store {
+    color: #458f00;
+}
+.icon-shop-mall {
+    color: #458f00;
+}
+.icon-shop-wool {
+    color: #458f00;
+}
+.icon-shop-bicycle {
+    color: #458f00;
+}
+.icon-shop-laundry {
+    color: #458f00;
+}
+.icon-shop-wine {
+    color: #458f00;
+}
+.icon-shop-alcohol {
+    color: #458f00;
+}
+
+/* Medical */
+.icon-amenity-hospital {
+    color: #00b1b1;
+}
+.icon-amenity-clinic {
+    color: #00b1b1;
+}
+.icon-amenity-doctors {
+    color: #00b1b1;
+}
+.icon-amenity-pharmacy {
+    color: #00b1b1;
+}
+
+/* Attractions */
+.icon-tourism-attraction {
+    color: #0022b9;
+}
+.icon-tourism-information {
+    color: #0022b9;
+}
+.icon-tourism-museum {
+    color: #0022b9;
+}
+.icon-tourism-viewpoint {
+    color: #0022b9;
+}
+
+/* Other */
+.icon-amenity-atm {
+    color: #8000a7;
+}
+.icon-amenity-bicycle_rental {
+    color: #8000a7;
+}
+.icon-amenity-internet_cafe {
+    color: #8000a7;
+}
+.icon-amenity-marketplace {
+    color: #8000a7;
+}
+.icon-craft-winery {
+    color: #8000a7;
+}
+.icon-tourism-wine_cellar {
+    color: #8000a7;
+}
+
+
+/* Routes */
+.route-hiking {
+    stroke: #970000;
+}
+.route-bicycle {
+    stroke: #006d0f;
+}
+.railway-rail {
+    stroke: #003879;
+}
+.railway-tram, .railway-light-rail {
+    stroke: #005f6b;
+}
+.railway-subway {
+    stroke: #793000;
+}
+.icon-railway-station {
+    color: #005ac2;
+}
+.icon-railway-tram_stop {
+    color: #005f6b;
+}

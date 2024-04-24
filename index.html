@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Travel Map Search</title>
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/font-awesome/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="/font-awesome/css/solid.min.css" />
+    <link rel="stylesheet" href="/font-awesome/css/brands.min.css" />
+    <link rel="stylesheet" href="/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/leaflet/leaflet.js"></script>
+    <script type="module" src="/js/main.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>Travel Map Search</h1>
+        <i class="spinner hidden fa-solid fa-spinner"></i>
+    </header>
+    <main id="map" class="map">
+    </main>
+    <aside class="sidebar hidden">
+        <fieldset>
+            <legend>Accommodation</legend>
+            <div class="input-group">
+                <label for="hotel">Hotels</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="hotel" id="hotel">
+            </div>
+            <div class="input-group">
+                <label for="guest_house">Guest House</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="guest_house" id="guest_house">
+            </div>
+            <div class="input-group">
+                <label for="hostel">Hostel</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="hostel" id="hostel">
+            </div>
+            <div class="input-group">
+                <label for="apartment">Apartment</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="apartment" id="apartment">
+            </div>
+            <div class="input-group">
+                <label for="chalet">Chalet</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="chalet" id="chalet">
+            </div>
+            <div class="input-group">
+                <label for="alpine_hut">Alpine Hut</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="alpine_hut" id="alpine_hut">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Bars, restaurants</legend>
+            <div class="input-group">
+                <label for="restaurant">Restaurant</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="restaurant" id="restaurant">
+            </div>
+            <div class="input-group">
+                <label for="cafe">Cafe</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="cafe" id="cafe">
+            </div>
+            <div class="input-group">
+                <label for="bar">Bar</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="bar" id="bar">
+            </div>
+            <div class="input-group">
+                <label for="pub">Pub</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="pub" id="pub">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Shops</legend>
+            <div class="input-group">
+                <label for="supermarket">Supermarket</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="supermarket" id="supermarket">
+            </div>
+            <div class="input-group">
+                <label for="department_store">Department Store</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="department_store" id="department_store">
+            </div>
+            <div class="input-group">
+                <label for="mall">Mall</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="mall" id="mall">
+            </div>
+            <div class="input-group">
+                <label for="wool">Wool</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="wool" id="wool">
+            </div>
+            <div class="input-group">
+                <label for="bicycle">Bicycle</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="bicycle" id="bicycle">
+            </div>
+            <div class="input-group">
+                <label for="laundry">Laundry</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="laundry" id="laundry">
+            </div>
+            <div class="input-group">
+                <label for="wine">Wine</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="wine" id="wine">
+            </div>
+            <div class="input-group">
+                <label for="alcohol">Alcohol</label>
+                <input type="checkbox" class="entity-checkbox" data-key="shop" data-value="alcohol" id="alcohol">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Medical</legend>
+            <div class="input-group">
+                <label for="clinic">Clinic</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="clinic" id="clinic">
+            </div>
+            <div class="input-group">
+                <label for="doctors">Doctors</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="doctors" id="doctors">
+            </div>
+            <div class="input-group">
+                <label for="hospital">Hospital</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="hospital" id="hospital">
+            </div>
+            <div class="input-group">
+                <label for="pharmacy">Pharmacy</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="pharmacy" id="pharmacy">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Attractions</legend>
+            <div class="input-group">
+                <label for="attraction">Attraction</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="attraction" id="attraction">
+            </div>
+            <div class="input-group">
+                <label for="information">Information</label>
+                <!-- <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="information" id="information"> -->
+                <input type="checkbox" class="entity-checkbox" data-custom-query="information" id="information">
+            </div>
+            <div class="input-group">
+                <label for="museum">Museum</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="museum" id="museum">
+            </div>
+            <div class="input-group">
+                <label for="viewpoint">Viewpoint</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="viewpoint" id="viewpoint">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Other</legend>
+            <div class="input-group">
+                <label for="atm">ATM</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="atm" id="atm">
+            </div>
+            <div class="input-group">
+                <label for="bicycle_rental">Bicycle Rental</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="bicycle_rental" id="bicycle_rental">
+            </div>
+            <div class="input-group">
+                <label for="internet_cafe">Internet Cafe</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="internet_cafe" id="internet_cafe">
+            </div>
+            <div class="input-group">
+                <label for="marketplace">Marketplace</label>
+                <input type="checkbox" class="entity-checkbox" data-key="amenity" data-value="marketplace" id="marketplace">
+            </div>
+            <div class="input-group">
+                <label for="winery">Winery</label>
+                <input type="checkbox" class="entity-checkbox" data-key="craft" data-value="winery" id="winery">
+            </div>
+            <div class="input-group">
+                <label for="wine_cellar">Wine Cellar</label>
+                <input type="checkbox" class="entity-checkbox" data-key="tourism" data-value="wine_cellar" id="wine_cellar">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Routes</legend>
+            <div class="input-group">
+                <label for="route-hiking">Hiking</label>
+                <input type="checkbox" class="entity-checkbox" data-key="route" data-value="hiking" id="route-hiking">
+            </div>
+            <div class="input-group">
+                <label for="route-bicycle">Bicycle</label>
+                <input type="checkbox" class="entity-checkbox" data-key="route" data-value="bicycle" id="route-bicycle">
+            </div>
+            <div class="input-group">
+                <label for="train-tracks">Train</label>
+                <input type="checkbox" class="entity-checkbox" data-custom-query="train-tracks" id="train-tracks">
+            </div>
+            <div class="input-group">
+                <label for="tram-tracks">Tram</label>
+                <input type="checkbox" class="entity-checkbox" data-custom-query="tram-tracks" id="tram-tracks">
+            </div>
+            <div class="input-group">
+                <label for="light-rail-tracks">Light rail</label>
+                <input type="checkbox" class="entity-checkbox" data-custom-query="light-rail-tracks" id="light-rail-tracks">
+            </div>
+            <div class="input-group">
+                <label for="subway-tracks">Subway</label>
+                <input type="checkbox" class="entity-checkbox" data-custom-query="subway-tracks" id="subway-tracks">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Custom</legend>
+            <div class="input-group">
+                <label for="wineries-with-accommodation">Wineries with accommodation</label>
+                <input type="checkbox" class="entity-checkbox" data-custom-query="wineries-with-accommodation" id="wineries-with-accommodation">
+            </div>
+        </fieldset>
+    </aside>
+    <section class="buttons hidden" id="buttons">
+        <div class="button-group">
+            <button type="button" id="clear">Clear</button>
+            <button type="button" id="my-location">My Location</button>
+        </div>
+        <button type="button" id="search">Search</button>
+    </section>
+    <section class="toggler">
+        <i class="fa-solid fa-angles-right" id="toggle-menu"></i>
+    </section>
+</body>
+</html>
