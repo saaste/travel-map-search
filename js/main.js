@@ -351,6 +351,15 @@ const createIcon = (element) => {
                 console.log("Unknown railway value ", element.tags.railway);
         }
         className = "icon-railway-" + element.tags.railway;
+    } else if ("sport" in element.tags) {
+        switch (element.tags.sport) {
+            case "free_flying":
+                iconClass = "fa-parachute-box";
+                break;
+            default:
+                console.log("Unknown sport value ", element.tags.sport);
+        }
+        className = "icon-sport-" + element.tags.sport;
     } else {
         console.log("type not supported: ", element);
     }
