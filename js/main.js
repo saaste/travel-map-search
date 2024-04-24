@@ -67,8 +67,6 @@ const menuToggleClick = () => {
 }
 
 const hideMenu = () => {
-    console.log("hiding");
-    
     menuElements.forEach((el) => {
         el.classList.add("hidden");
     })
@@ -81,7 +79,6 @@ const hideMenu = () => {
 }
 
 const showMenu = () => {
-    console.log("showing");
     storedBounds = map.getBounds();
     
     menuElements.forEach((el) => {
@@ -323,7 +320,7 @@ const createIcon = (element) => {
                 iconClass = "fa-bicycle";
                 break;
             case "laundry":
-                iconClass = "fa-hand-bubbles";
+                iconClass = "fa-jug-detergent";
                 break;
             case "wine":
             case "alcohol":

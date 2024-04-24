@@ -61,7 +61,7 @@ export const fetchResults = async (south, west, north, east) => {
     `);
 
     // Uncomment to see the request body
-    // console.log(body);
+    // console.log(query);
 
     let result = await fetch(OVERPASS_URL, {
         method: "POST",
