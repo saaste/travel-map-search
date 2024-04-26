@@ -74,3 +74,11 @@ export const fetchResults = async (south, west, north, east) => {
     // console.log(JSON.stringify(result, null, 2));
     return result;
 }
+
+export const getResultSizeInMB = (result) => {
+    const size = new TextEncoder().encode(JSON.stringify(result)).length
+    const kiloBytes = size / 1024;
+    const megaBytes = kiloBytes / 1024;
+
+    return Math.round(megaBytes);
+}

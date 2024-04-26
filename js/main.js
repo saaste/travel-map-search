@@ -1,18 +1,18 @@
-import { fetchResults } from "./overpass-client.js";
+import { fetchResults, getResultSizeInMB } from "./overpass-client.js";
+import { getSavedLocation, saveCurrentLocation, getSavedZoom, saveCurrentZoom, getSavedCheckboxes, saveCheckedCheckboxes } from "./cache.js";
+import { createPopupContent, createMarker, createMarkerFromWay } from "./map-utils.js";
+import { state } from "./state.js";
 
-let map, searchButton, clearButton, myLocationButton, menuToggleButton, menuElements, spinner;
-let markers = [];
-let polylines = [];
-let storedBounds = null;
-let menuVisible = false;
+let searchButton, clearButton, myLocationButton, menuToggleButton, menuElements, spinner;
 
 window.onload = () => {
     init();
 }
 
 const init = () => {
-    let lastLocation = getSavedLocation() || [60.2170, 24.8542];
-    let lastZoom = getSavedZoom() || 15;
+    let lastLocation = getSavedLocation();
+    let lastZoom = getSavedZoom();
+
     map = L.map("map").setView(lastLocation, lastZoom);
     map.addEventListener("zoomend", mapZoomEnd);
     map.addEventListener("moveend", mapMoveEnd);
@@ -59,7 +59,7 @@ const mapMoveEnd = (e) => {
 }
 
 const menuToggleClick = () => {
-    if (menuVisible) {
+    if (state.menuVisible) {
         hideMenu();
     } else {
         showMenu();
@@ -72,21 +72,21 @@ const hideMenu = () => {
     })
     
     map.invalidateSize();
-    storedBounds = null;
-    menuVisible = false;
+    state.storedBounds = null;
+    state.menuVisible = false;
     menuToggleButton.classList.remove("fa-angles-left");
     menuToggleButton.classList.add("fa-angles-right");
 }
 
 const showMenu = () => {
-    storedBounds = map.getBounds();
+    state.storedBounds = map.getBounds();
     
     menuElements.forEach((el) => {
             el.classList.remove("hidden");
     })
 
     map.invalidateSize();
-    menuVisible = true;
+    state.menuVisible = true;
     menuToggleButton.classList.add("fa-angles-left");
     menuToggleButton.classList.remove("fa-angles-right");
 }
@@ -127,20 +127,16 @@ const searchClick = () => {
     showSpinner();
 
     let bounds = map.getBounds();
-    if (storedBounds) {
-        console.log("using stored bounds");
-        bounds = storedBounds;
+    if (state.storedBounds) {
+        bounds = state.storedBounds;
     }
 
     clearMapElements();
     fetchResults(bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast())
         .then((result) => {
-            const size = new TextEncoder().encode(JSON.stringify(result)).length
-            const kiloBytes = size / 1024;
-            const megaBytes = kiloBytes / 1024;
-
-            if (megaBytes > 2) {
-                let cont = confirm(`Query returned quite a lot of data (approx. ${Math.round(megaBytes)} MB). Your browser may have a hard time trying to render this. Do you really want to continue?`);
+            const resultSizeInMB = getResultSizeInMB(result);
+            if (resultSizeInMB > 2) {
+                let cont = confirm(`Query returned quite a lot of data (approx. ${resultSizeInMB} MB). Your browser may have a hard time trying to render this if you are zoomed out. Do you really want to continue?`);
                 if (!cont) {
                     searchButton.disabled = false;
                     return;
@@ -151,17 +147,27 @@ const searchClick = () => {
                 switch (element.type) {
                     case "node":
                         // console.log("node", element);
-                        let marker = createMarker(element)
+                        let marker = createMarker(state, element)
                         marker.addTo(map);
                         break;
                     case "way":
                         // console.log("way", element);
-                        let line = createPolylinesWay(element);
-                        line.addTo(map);
+                        const firstGeometry = element.geometry[0];
+                        const lastGeometry = element.geometry[element.geometry.length - 1];
+                        if (firstGeometry.lat === lastGeometry.lat && firstGeometry.lon === lastGeometry.lon) {
+                            // Closed geometry: building, etc (can be a roundabout)
+                            let wayMarker = createMarkerFromWay(state, element);
+                            wayMarker.addTo(map);
+                        } else {
+                            // Open geometry: road, etc
+                            let line = createPolylinesWay(element);
+                            line.addTo(map);
+                        }
+                        
                         break;
                     case "relation":
                         // console.log("relation", element);
-                        let lines = createPolylinesRelation(element);
+                        let lines = createPolylinesRelation(element, map.getBounds());
                         lines.forEach((pl) => {
                             pl.addTo(map);
                         })
@@ -205,186 +211,7 @@ const setCheckboxLabelStyle = (checkbox) => {
     })
 }
 
-const createPopupContent = (element) => {
-    let content = `<div class="marker-popup-content">`
-
-    if ("name" in element.tags) {
-        content += `<h4><strong>${element.tags["name"]}</strong></h4>`
-    }
-
-
-    for (const key in element.tags) {
-        let value = element.tags[key];
-        if (key.startsWith("addr")) {
-            content += `<p>${key.replace("addr:", "")}: ${value}</p>`
-        } else if (value.startsWith("http")) {
-            content += `<p>${key}: <a href="${value}" target="_blank">${value}</a></p>`
-        } else if (key == "name") {
-            continue;
-        } else {
-            content += `<p>${key}: ${value}</p>`
-        }
-    }
-    content += "</div>"
-    return content;
-}
-
-const createIcon = (element) => {
-    let iconClass = "fa-location-dot"
-    let className = "icon-unknown"
-
-    if ("tourism" in element.tags) {
-        switch (element.tags.tourism) {
-            case "hotel":
-            case "guest_house":
-            case "apartment":
-            case "hostel":
-            case "chalet":
-            case "alpine_hut":
-                iconClass = "fa-bed";
-                break;
-            case "attraction":
-                iconClass = "fa-camera";
-                break;
-            case "information":
-                iconClass = "fa-circle-info";
-                break;
-            case "museum":
-                iconClass = "fa-building-columns";
-                break;
-            case "viewpoint":
-                iconClass = "fa-binoculars";
-                break;
-            case "wine_cellar":
-                iconClass = "fa-wine-bottle";
-                break;
-            default:
-                console.log("Unknown tourism value ", element.tags.tourism);
-        }
-        className = "icon-tourism-" + element.tags.tourism;
-    } else if ("amenity" in element.tags) {
-        switch (element.tags.amenity) {
-            case "restaurant":
-                iconClass = "fa-utensils";
-                break;
-            case "cafe":
-                iconClass = "fa-mug-saucer";
-                break;
-            case "bar":
-                iconClass = "fa-martini-glass";
-                break;
-            case "pub":
-                iconClass = "fa-beer-mug-empty";
-                break;
-            case "hospital":
-                iconClass = "fa-hospital";
-                break;
-            case "clinic":
-                iconClass = "fa-chimney-medical";
-                break;
-            case "doctors":
-                iconClass = "fa-user-doctor";
-                break;
-            case "pharmacy":
-                iconClass = "fa-prescription-bottle-medical";
-                break;
-            case "atm":
-                iconClass = "fa-euro-sign";
-                break;
-            case "bicycle_rental":
-                iconClass = "fa-bicycle";
-                break;
-            case "internet_cafe":
-                iconClass = "fa-wifi";
-                break;
-            case "marketplace":
-                iconClass = "fa-store";
-                break;
-            default:
-                console.log("Unknown amenity value ", element.tags.amenity);
-        }
-        className = "icon-amenity-" + element.tags.amenity;
-    } else if ("shop" in element.tags) {
-        switch (element.tags.shop) {
-            case "supermarket":
-                iconClass = "fa-basket-shopping"
-                break;
-            case "department_store":
-            case "mall":
-                iconClass = "fa-cart-shopping";
-                break;
-            case "wool":
-                iconClass = "fa-shirt";
-                break;
-            case "bicycle":
-                iconClass = "fa-bicycle";
-                break;
-            case "laundry":
-                iconClass = "fa-jug-detergent";
-                break;
-            case "wine":
-            case "alcohol":
-                iconClass = "fa-wine-bottle";
-                break;
-            default:
-                console.log("Unknown shop value ", element.tags.shop);
-        }
-        className = "icon-shop-" + element.tags.shop;
-    } else if ("craft" in element.tags) {
-        switch (element.tags.craft) {
-            case "winery":
-                iconClass = "fa-wine-bottle";
-                break;
-            default:
-                console.log("Unknown craft value ", element.tags.craft);
-        }
-        className = "icon-craft-" + element.tags.craft;
-    } else if ("railway" in element.tags) {
-        switch (element.tags.railway) {
-            case "station":
-                iconClass = "fa-train";
-                break;
-            case "tram_stop":
-                iconClass = "fa-train-tram";
-                break;
-            default:
-                console.log("Unknown railway value ", element.tags.railway);
-        }
-        className = "icon-railway-" + element.tags.railway;
-    } else if ("sport" in element.tags) {
-        switch (element.tags.sport) {
-            case "free_flying":
-                iconClass = "fa-parachute-box";
-                break;
-            default:
-                console.log("Unknown sport value ", element.tags.sport);
-        }
-        className = "icon-sport-" + element.tags.sport;
-    } else {
-        console.log("type not supported: ", element);
-    }
-
-    return L.divIcon({
-        html: `<i class="fa-solid ${iconClass}"></i>`,
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
-        popupAnchor: [0, 0],
-        className: className,
-    })
-}
-
-const createMarker = (element) => {
-    let icon = createIcon(element);
-    let marker = L.marker([element.lat, element.lon], { icon: icon })
-    marker.bindPopup(createPopupContent(element));
-    markers.push(marker);
-    return marker
-}
-
-const createPolylinesRelation = (element) => {
-    if (!("members" in element))
-        return null;
-
+const createPolylinesRelation = (element, bounds) => {
     let className = "route-unknown";
     if ("route" in element.tags) {
         className = `route-${element.tags.route}`;
@@ -392,18 +219,25 @@ const createPolylinesRelation = (element) => {
 
     let memberPolylines = []
     for (let i = 0; i < element.members.length; i++) {
-        let way = element.members[i];
-        if (!("geometry" in way) || way.geometry.length === 0)
+        let member = element.members[i];
+        if (member.type !== "way") {
             continue;
+        }
 
         let coordinates = [];
-        way.geometry.forEach((geo) => {
-            coordinates.push([geo.lat, geo.lon]);
+        member.geometry.forEach((geo) => {
+            // Include coordinates that are within the bounds
+            if (bounds.contains([geo.lat, geo.lon])) {
+                coordinates.push([geo.lat, geo.lon]);
+            }
         });
-        let polyline = L.polyline(coordinates, { weight: 5, smoothFactor: 1.0, className: className })
-        polyline.bindPopup(createPopupContent(element));
-        polylines.push(polyline);
-        memberPolylines.push(polyline);
+
+        if (coordinates.length > 2) {
+            let polyline = L.polyline(coordinates, { weight: 5, smoothFactor: 5.0, className: className })
+            polyline.bindPopup(createPopupContent(element));
+            state.polylines.push(polyline);
+            memberPolylines.push(polyline);
+        }
     }
     
     return memberPolylines
@@ -423,51 +257,19 @@ const createPolylinesWay = (element) => {
         coordinates.push([geo.lat, geo.lon]);
     });
     let polyline = L.polyline(coordinates, { weight: 5, smoothFactor: 1.0, className: className })
-    polylines.push(polyline);
+    state.polylines.push(polyline);
         
     return polyline
 }
 
 const clearMapElements = () => {
-    markers.forEach((marker) => {
+    state.markers.forEach((marker) => {
         map.removeLayer(marker);
     });
-    polylines.forEach((pl) => {
+    state.markers = [];
+
+    state.polylines.forEach((pl) => {
         map.removeLayer(pl);
-    })
-}
-
-const saveCurrentLocation = (location) => {
-    window.localStorage.setItem("last-location", `${location.lat},${location.lng}`);
-}
-
-const getSavedLocation = () => {
-    let value = window.localStorage.getItem("last-location");
-    if (!value) return null;
-
-    let parts = value.split(",");
-    return [parseFloat(parts[0]), parseFloat(parts[1])];
-}
-
-const saveCurrentZoom = (zoom) => {
-    window.localStorage.setItem("last-zoom", zoom);
-}
-
-const getSavedZoom = () => {
-    let value = window.localStorage.getItem("last-zoom");
-    if (!value) return null;
-
-    return parseInt(value, 10);
-}
-
-const saveCheckedCheckboxes = (checkboxes) => {
-    let value = Array.from(checkboxes).map((cb) => cb.id).join(",");
-    window.localStorage.setItem("last-selection", value);
-}
-
-const getSavedCheckboxes = () => {
-    let value = window.localStorage.getItem("last-selection");
-    if (value === null) return [];
-    return value.split(",")
-
+    });
+    state.markers = [];
 }

@@ -115,7 +115,7 @@ button:disabled {
     }
 }
 
-.marker-popup-content {
+.map-popup-content {
     p {
         white-space: nowrap;
         overflow: hidden;
